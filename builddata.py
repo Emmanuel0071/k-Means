@@ -1,6 +1,7 @@
-from sklearn.datasets import make_blobs
+from sklearn.datasets import make_blobs, make_classification
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 print("Generating synthetic data...")
 
@@ -8,8 +9,17 @@ def generate_data(dim: int,distribution: str = 'gaussian', n_samples: int = 100)
     if distribution == 'gaussian':
         data = make_blobs(n_samples=n_samples, n_features=dim, random_state=42)
         return data[0],data[1]
-    elif distribution == 'uniform':
-        return np.random.uniform(low=-3, high=3, size=(n_samples, dim))
+    elif distribution == 'class':
+        X, y = make_classification(
+            n_samples=n_samples,
+            n_features=dim,
+            n_informative=dim,      
+            n_redundant=0,
+            n_repeated=0,
+            n_classes=2,
+            n_clusters_per_class=1,
+            random_state=42)
+        return X, y
     else:
         raise ValueError("Unsupported distribution")
 
@@ -38,5 +48,3 @@ def visualize_data(X, y=None):
     plt.title('Generated Data')
     plt.show()
 
-X, y = generate_data(dim=3, distribution='gaussian', n_samples=100)
-visualize_data(X, y)
