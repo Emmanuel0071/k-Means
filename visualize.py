@@ -52,7 +52,7 @@ def visualize_data(X, y=None):
 
 def visualize_kmeans(history_errors):
     plt.subplots(figsize=(10,10))
-    plt.plot(history_errors)
+    plt.plot(history_errors, "bo-")
     plt.xlabel('Iteration')
     plt.ylabel('SSE Error')
     plt.title('K-Means Convergence')
