@@ -1,52 +1,60 @@
 import numpy as np
 import random
 
-def initialize_centers(X,k):
-    list_centers = []
-    for i in range (k):
-        list_centers.append(X[random.randint(0,len(X)-1)])
-    return np.array(list_centers)
+def initialize_centers(X, k):
 
-def  sse_distance(point,centers):
-    return np.sum((point-centers)**2)
+    indices = random.sample(range(len(X)), k)
+    return np.array(X[indices], dtype=float)
 
-def find_closest_center(point,centers):
+def sse_distance(point, center):
+    return np.sum((point - center) ** 2)
+
+def find_closest_center(point, centers):
     index_closest = 0
     min_sse = float('inf')
 
     for i in range(len(centers)):
-        sse = sse_distance(point,centers[i])
+        sse = sse_distance(point, centers[i])
         if sse < min_sse:
             min_sse = sse
             index_closest = i
     return index_closest
 
-def compute_clusters(X,centers):
+def compute_clusters(X, centers):
     cluster = []
-    for i in range(len(centers)):
-        index_clostest = find_closest_center(X[i],centers)
-        cluster.append(index_clostest)
+    for i in range(len(X)):  
+        index_closest = find_closest_center(X[i], centers)
+        cluster.append(index_closest)
     return cluster
 
-def sse_error(X, centers):
+def sse_error(X, centers, cluster):
     error = 0 
-    cluster = compute_clusters(X, centers)
     for i in range(len(X)):
         error += sse_distance(X[i], centers[cluster[i]])
     return error
 
-def kmeans(X,k,max_iter=None):
-    history_centers = []
+def kmeans(X, k, max_iter=None):
+    centers = initialize_centers(X, k)
+    history_centers = [centers.copy()]  
     history_error = []
-    centers = initialize_centers(X,k)
     i = 0
+
     while True:
-        cluster = np.array(compute_clusters(X,centers))
+        cluster = np.array(compute_clusters(X, centers))
 
         for j in range(k):
             points_in_cluster = X[cluster == j]
-
             if len(points_in_cluster) > 0:
-                centers[j] = np.mean(points_in_cluster,axis=0)
+                centers[j] = np.mean(points_in_cluster, axis=0)
+
+        cluster = np.array(compute_clusters(X, centers))
+        
         history_centers.append(centers.copy())
-        history_error.append(sse_error(X,centers,cluster))
+        history_error.append(sse_error(X, centers, cluster)) 
+        i += 1
+
+        converged = np.allclose(history_centers[-1], history_centers[-2])
+        reached_max_iterations = max_iter is not None and i >= max_iter
+        
+        if converged or reached_max_iterations:
+            return history_centers, history_error, i
