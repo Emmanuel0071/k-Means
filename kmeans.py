@@ -77,3 +77,26 @@ def kmeans(X, k, max_iter=None , version = "classic"):
             return history_centers, history_error, i
 
 
+def minibatch_kmeans(X, k, batch_size=32, max_iter=100):
+    centers = initialize_centers_plus_plus(X, k)
+    counts = np.zeros(k)  
+    history_centers = [centers.copy()]
+    history_error = []
+
+    for i in range(1, max_iter + 1):
+        actual_batch_size = min(batch_size, len(X))
+        indices = np.random.choice(len(X), actual_batch_size, replace=False)
+        X_batch = X[indices]
+
+        for point in X_batch:
+            c = find_closest_center(point, centers)  
+            counts[c] += 1  # Ce centre gagne +1 en poids
+            
+            vitesse = 1 / counts[c]
+            centers[c] = centers[c] + vitesse * (point - centers[c])
+        
+        history_centers.append(centers.copy())
+        clusters = compute_clusters(X, centers)
+        history_error.append(sse_error(X, centers, clusters))
+
+    return history_centers, history_error, max_iter
